@@ -3,6 +3,7 @@ import math
 from numpy import *
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 
 def createDataset():
     X = mat([[0,0],[1,0],[0,1.9],[1,1],[2,2]])
@@ -39,8 +40,10 @@ def BPNN(X,Y,neta,q):
     g = mat(zeros((1,l)))
     e = mat(zeros((1,q)))
     Yp = mat(zeros((m,l)))
-    Error = 100
+    Error = 0.2
     ErrorVec = mat(zeros((m,1)))
+    ErrorTrend = mat(zeros((120,1)))   # 记录预测误差的变化
+    ErrorTrend[0,0] = Error
     flag = 0
     # Step1: 在（0，1）内随机初始化参数
     Weight_iy = mat(np.random.rand(d, q))
@@ -49,7 +52,7 @@ def BPNN(X,Y,neta,q):
     Theta_yo = mat(np.random.rand(1, l))
     # print(Weight_iy)
     # print(Weight_yo)
-    while(Error>0.001):
+    while(Error>0.01):
         flag += 1
         for k in range(m):
             ## Step2: 计算预测输出
@@ -82,17 +85,21 @@ def BPNN(X,Y,neta,q):
         for k in range(m):
             ErrorVec[k,:] = 1/2*(Yp-Y)[k,:]*(Yp-Y)[k,:].T
         Error = mean(ErrorVec, axis=0)
+        ErrorTrend[flag,0] = Error
     print(flag)
-    return Weight_iy,Weight_yo,Theta_iy,Theta_yo
+    return Weight_iy,Weight_yo,Theta_iy,Theta_yo,ErrorTrend
 
 # main
 if __name__ == '__main__':
     X,Y = createDataset()
     neta = 1
     q = 2
-    Weight_iy, Weight_yo, Theta_iy, Theta_yo = BPNN(X, Y, neta, q)
+    Weight_iy, Weight_yo, Theta_iy, Theta_yo, ErrorTrend = BPNN(X, Y, neta, q)
     Xtest = mat([[0.5, 0.0], [1.8, 0.9]])
     Yp = Predict(Xtest, q, Weight_iy, Weight_yo, Theta_iy, Theta_yo)
     print(Yp)
+    plt.figure()
+    plt.plot(ErrorTrend)
+    plt.show()
     # print(Weight_iy)
     # print(Weight_yo)
